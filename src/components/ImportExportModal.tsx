@@ -7,7 +7,7 @@ interface ImportExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   transactions: Transaction[];
-  onImport: (transactions: Transaction[]) => void;
+  onImport: (transactions: Transaction[]) => Promise<{ imported: number; skipped: number } | void>;
 }
 
 export const ImportExportModal: React.FC<ImportExportModalProps> = ({
@@ -49,16 +49,16 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
 
     try {
       let importedTransactions: Transaction[];
-      
+
       if (importType === 'json') {
         importedTransactions = await importFromJSON(file);
       } else {
         importedTransactions = await importFromCSV(file);
       }
 
-      const result = await onImport(importedTransactions);
-      
-      if (result) {
+      const result = await onImport(importedTransactions) as any;
+
+      if (result && typeof result === 'object' && 'imported' in result) {
         let message = `成功导入 ${result.imported} 条交易记录`;
         if (result.skipped > 0) {
           message += `，跳过 ${result.skipped} 条重复记录`;
