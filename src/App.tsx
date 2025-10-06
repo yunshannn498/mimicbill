@@ -261,10 +261,10 @@ function App() {
           />
         </div>
 
-        {/* Quick Add Forms */}
+        {/* Quick Add Forms - Hidden on Mobile */}
         <div className="mb-6 md:mb-8">
-          {/* Desktop: 4-column layout, Mobile: 2x2 grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-6xl mx-auto">
+          {/* Desktop: 4-column layout, Hidden on Mobile */}
+          <div className="hidden md:grid md:grid-cols-4 gap-4 max-w-6xl mx-auto">
             <QuickAddForm
               type="income"
               onAdd={addTransaction}
