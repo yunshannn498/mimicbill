@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { TrendingUp, Database, Plus } from 'lucide-react';
+import { TrendingUp, Database, Plus, FileText } from 'lucide-react';
 import { StatsCard } from './components/StatsCard';
 import { QuickAddForm } from './components/QuickAddForm';
 import { TransactionForm } from './components/TransactionForm';
@@ -11,6 +11,7 @@ import { ConfirmModal } from './components/ConfirmModal';
 import { AuthModal } from './components/AuthModal';
 import { UserProfile } from './components/UserProfile';
 import { ImportExportModal } from './components/ImportExportModal';
+import { OutstandingPaymentModal } from './components/OutstandingPaymentModal';
 import { useTransactions } from './hooks/useTransactions';
 import { useAuth } from './hooks/useAuth';
 import { FilterType, TransactionType, Transaction } from './types/Transaction';
@@ -46,6 +47,7 @@ function App() {
   const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
+  const [isOutstandingPaymentModalOpen, setIsOutstandingPaymentModalOpen] = useState(false);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(transaction => {
@@ -160,6 +162,14 @@ function App() {
     setIsImportExportModalOpen(false);
   };
 
+  const handleOpenOutstandingPayment = () => {
+    setIsOutstandingPaymentModalOpen(true);
+  };
+
+  const handleCloseOutstandingPayment = () => {
+    setIsOutstandingPaymentModalOpen(false);
+  };
+
   const handleOpenAddModal = () => {
     setIsAddModalOpen(true);
   };
@@ -194,14 +204,24 @@ function App() {
           </div>
           <div className="flex items-center gap-3">
             {user && (
-              <button
-                onClick={handleOpenImportExport}
-                className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm md:text-base"
-              >
-                <Database className="w-3 h-3 md:w-4 md:h-4" />
-                <span className="hidden sm:inline">数据管理</span>
-                <span className="sm:hidden">数据</span>
-              </button>
+              <>
+                <button
+                  onClick={handleOpenOutstandingPayment}
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm md:text-base"
+                >
+                  <FileText className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">未结款统计</span>
+                  <span className="sm:hidden">未结</span>
+                </button>
+                <button
+                  onClick={handleOpenImportExport}
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm md:text-base"
+                >
+                  <Database className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">数据管理</span>
+                  <span className="sm:hidden">数据</span>
+                </button>
+              </>
             )}
             <UserProfile onLoginClick={handleLoginClick} />
           </div>
@@ -376,6 +396,13 @@ function App() {
           onClose={handleCloseImportExport}
           transactions={transactions}
           onImport={importTransactions}
+        />
+
+        {/* Outstanding Payment Modal */}
+        <OutstandingPaymentModal
+          isOpen={isOutstandingPaymentModalOpen}
+          onClose={handleCloseOutstandingPayment}
+          transactions={transactions}
         />
 
 
