@@ -387,7 +387,7 @@ export const useTransactions = () => {
     return {
       totalIncome,
       totalExpense,
-      monthlyEstimatedIncome: monthlyEstimatedIncome - monthlyEstimatedExpense,
+      monthlyEstimatedIncome,
       unpaidAmount: cumulativeEstimatedIncome,
       balance: totalIncome - totalExpense,
     };

@@ -5,9 +5,11 @@ interface StatsCardProps {
   amount: number;
   type: 'income' | 'expense' | 'balance' | 'estimated';
   className?: string;
+  onClick?: () => void;
+  isActive?: boolean;
 }
 
-export const StatsCard: React.FC<StatsCardProps> = ({ title, amount, type, className = '' }) => {
+export const StatsCard: React.FC<StatsCardProps> = ({ title, amount, type, className = '', onClick, isActive = false }) => {
   const getAmountColor = () => {
     switch (type) {
       case 'income':
@@ -23,16 +25,17 @@ export const StatsCard: React.FC<StatsCardProps> = ({ title, amount, type, class
 
   const formatAmount = () => {
     if (type === 'balance') {
-      // 对于结余，显示实际的正负号
       const sign = amount >= 0 ? '' : '-';
       return `${sign}¥${Math.abs(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`;
     } else {
-      // 对于收入和支出，继续使用绝对值
       return `¥${Math.abs(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`;
     }
   };
   return (
-    <div className={`bg-white rounded-xl shadow-lg p-4 md:p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300 ${className}`}>
+    <div
+      className={`bg-white rounded-xl shadow-lg p-4 md:p-6 border ${isActive ? 'border-orange-500 border-2 ring-2 ring-orange-200' : 'border-gray-100'} hover:shadow-xl transition-all duration-300 ${onClick ? 'cursor-pointer hover:scale-105 active:scale-100' : ''} ${className}`}
+      onClick={onClick}
+    >
       <div className="text-center">
         <p className="text-xs md:text-sm font-medium text-gray-600 mb-2">{title}</p>
         <p className={`text-lg md:text-2xl font-bold ${getAmountColor()}`}>

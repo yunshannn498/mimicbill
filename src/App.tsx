@@ -52,6 +52,7 @@ function App() {
   const [isOutstandingPaymentModalOpen, setIsOutstandingPaymentModalOpen] = useState(false);
   const [isDocumentStatusModalOpen, setIsDocumentStatusModalOpen] = useState(false);
   const [managingTransaction, setManagingTransaction] = useState<Transaction | null>(null);
+  const [activeStatFilter, setActiveStatFilter] = useState<string | null>(null);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(transaction => {
@@ -69,28 +70,27 @@ function App() {
       } else {
         matchesFilter = transaction.type === filter;
       }
-      
+
       // Amount range filter
       const min = minAmount ? parseFloat(minAmount) : 0;
       const max = maxAmount ? parseFloat(maxAmount) : Infinity;
       const matchesAmount = transaction.amount >= min && transaction.amount <= max;
-      
+
       // Date range filter
       const transactionDate = new Date(transaction.date);
       const start = startDate ? new Date(startDate) : null;
       const end = endDate ? new Date(endDate) : null;
-      
+
       let matchesDateRange = true;
       if (start) {
         matchesDateRange = matchesDateRange && transactionDate >= start;
       }
       if (end) {
-        // Set end date to end of day for inclusive comparison
         const endOfDay = new Date(end);
         endOfDay.setHours(23, 59, 59, 999);
         matchesDateRange = matchesDateRange && transactionDate <= endOfDay;
       }
-      
+
       return matchesSearch && matchesFilter && matchesAmount && matchesDateRange;
     });
   }, [transactions, searchTerm, filter, minAmount, maxAmount, startDate, endDate]);
@@ -201,6 +201,46 @@ function App() {
     setIsAddModalOpen(false);
   };
 
+  const handleStatCardClick = (statType: string) => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+
+    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
+    setActiveStatFilter(statType);
+
+    switch (statType) {
+      case 'income':
+        setFilter('income');
+        setStartDate(formatDate(firstDayOfMonth));
+        setEndDate(formatDate(lastDayOfMonth));
+        break;
+      case 'expense':
+        setFilter('expense');
+        setStartDate(formatDate(firstDayOfMonth));
+        setEndDate(formatDate(lastDayOfMonth));
+        break;
+      case 'balance':
+        setFilter('all');
+        setStartDate(formatDate(firstDayOfMonth));
+        setEndDate(formatDate(lastDayOfMonth));
+        break;
+      case 'estimated_income':
+        setFilter('estimated_income');
+        setStartDate(formatDate(firstDayOfMonth));
+        setEndDate(formatDate(lastDayOfMonth));
+        break;
+      case 'unpaid':
+        setFilter('estimated_income');
+        setStartDate('');
+        setEndDate('');
+        break;
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -277,30 +317,40 @@ function App() {
             amount={monthlyStats.totalIncome}
             type="income"
             className="col-span-1"
+            onClick={() => handleStatCardClick('income')}
+            isActive={activeStatFilter === 'income'}
           />
           <StatsCard
             title="当月支出"
             amount={monthlyStats.totalExpense}
             type="expense"
             className="col-span-1"
+            onClick={() => handleStatCardClick('expense')}
+            isActive={activeStatFilter === 'expense'}
           />
           <StatsCard
             title="当月结余"
             amount={monthlyStats.balance}
             type="balance"
             className="col-span-1"
+            onClick={() => handleStatCardClick('balance')}
+            isActive={activeStatFilter === 'balance'}
           />
           <StatsCard
-            title="当月预估收入"
+            title="当月签单金额"
             amount={monthlyStats.monthlyEstimatedIncome}
             type="estimated"
             className="col-span-1"
+            onClick={() => handleStatCardClick('estimated_income')}
+            isActive={activeStatFilter === 'estimated_income'}
           />
           <StatsCard
             title="未结款金额"
             amount={monthlyStats.unpaidAmount}
             type="estimated"
             className="col-span-1"
+            onClick={() => handleStatCardClick('unpaid')}
+            isActive={activeStatFilter === 'unpaid'}
           />
         </div>
 
