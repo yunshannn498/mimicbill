@@ -150,11 +150,13 @@ export const useTransactions = () => {
     if (!user) return;
 
     try {
+      const now = new Date().toISOString();
       const { error } = await supabase
         .from('transactions')
         .update({
           type: 'expense',
           is_converted: true,
+          converted_at: now,
         })
         .eq('id', id);
 
@@ -163,7 +165,7 @@ export const useTransactions = () => {
       setTransactions(prev =>
         prev.map(transaction =>
           transaction.id === id && transaction.type === 'estimated_expense'
-            ? { ...transaction, type: 'expense' as TransactionType, isConverted: true }
+            ? { ...transaction, type: 'expense' as TransactionType, isConverted: true, convertedAt: new Date(now) }
             : transaction
         )
       );
@@ -181,6 +183,7 @@ export const useTransactions = () => {
         .update({
           type: 'estimated_expense',
           is_converted: false,
+          converted_at: null,
         })
         .eq('id', id);
 
@@ -189,7 +192,7 @@ export const useTransactions = () => {
       setTransactions(prev =>
         prev.map(transaction =>
           transaction.id === id && transaction.type === 'expense'
-            ? { ...transaction, type: 'estimated_expense' as TransactionType, isConverted: false }
+            ? { ...transaction, type: 'estimated_expense' as TransactionType, isConverted: false, convertedAt: undefined }
             : transaction
         )
       );
@@ -359,30 +362,30 @@ export const useTransactions = () => {
       })
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const monthlyTransactions = transactions.filter(transaction => {
-      const transactionDate = transaction.date;
-      return (
-        transactionDate.getMonth() === currentMonth &&
-        transactionDate.getFullYear() === currentYear
-      );
-    });
-
-    const totalExpense = monthlyTransactions
-      .filter(t => t.type === 'expense')
+    const totalExpense = transactions
+      .filter(t => {
+        if (t.type !== 'expense') return false;
+        const dateToUse = t.convertedAt || t.date;
+        return (
+          dateToUse.getMonth() === currentMonth &&
+          dateToUse.getFullYear() === currentYear
+        );
+      })
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const monthlyEstimatedIncome = monthlyTransactions
-      .filter(t => t.type === 'estimated_income')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const monthlyEstimatedExpense = monthlyTransactions
-      .filter(t => t.type === 'estimated_expense')
+    const monthlyEstimatedIncome = transactions
+      .filter(t => {
+        if (t.type !== 'estimated_income') return false;
+        return (
+          t.date.getMonth() === currentMonth &&
+          t.date.getFullYear() === currentYear
+        );
+      })
       .reduce((sum, t) => sum + t.amount, 0);
 
     const cumulativeEstimatedIncome = transactions
       .filter(t => t.type === 'estimated_income')
       .reduce((sum, t) => sum + t.amount, 0);
-
 
     return {
       totalIncome,
