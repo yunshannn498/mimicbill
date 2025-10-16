@@ -77,7 +77,9 @@ function App() {
       const matchesAmount = transaction.amount >= min && transaction.amount <= max;
 
       // Date range filter
-      const transactionDate = new Date(transaction.date);
+      const transactionDate = (transaction.type === 'income' || transaction.type === 'expense')
+        ? (transaction.convertedAt || transaction.date)
+        : transaction.date;
       const start = startDate ? new Date(startDate) : null;
       const end = endDate ? new Date(endDate) : null;
 
