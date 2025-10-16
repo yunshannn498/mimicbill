@@ -427,6 +427,7 @@ function App() {
           isOpen={isOutstandingPaymentModalOpen}
           onClose={handleCloseOutstandingPayment}
           transactions={transactions}
+          onUpdateDocumentStatus={updateDocumentStatus}
         />
 
         {/* Document Status Modal */}
