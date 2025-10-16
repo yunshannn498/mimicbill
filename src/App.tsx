@@ -12,6 +12,7 @@ import { AuthModal } from './components/AuthModal';
 import { UserProfile } from './components/UserProfile';
 import { ImportExportModal } from './components/ImportExportModal';
 import { OutstandingPaymentModal } from './components/OutstandingPaymentModal';
+import { DocumentStatusModal } from './components/DocumentStatusModal';
 import { useTransactions } from './hooks/useTransactions';
 import { useAuth } from './hooks/useAuth';
 import { FilterType, TransactionType, Transaction } from './types/Transaction';
@@ -30,6 +31,7 @@ function App() {
     deleteTransaction,
     updateTransaction,
     importTransactions,
+    updateDocumentStatus,
   } = useTransactions();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,14 +50,25 @@ function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
   const [isOutstandingPaymentModalOpen, setIsOutstandingPaymentModalOpen] = useState(false);
+  const [isDocumentStatusModalOpen, setIsDocumentStatusModalOpen] = useState(false);
+  const [managingTransaction, setManagingTransaction] = useState<Transaction | null>(null);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(transaction => {
       const matchesSearch = transaction.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
-      
-      const matchesFilter = filter === 'all' || transaction.type === filter;
+
+      let matchesFilter = true;
+      if (filter === 'all') {
+        matchesFilter = true;
+      } else if (filter === 'incomplete_documents') {
+        matchesFilter =
+          transaction.type === 'estimated_income' &&
+          (transaction.contractStatus === 'incomplete' || transaction.thirdPartyStatus === 'incomplete');
+      } else {
+        matchesFilter = transaction.type === filter;
+      }
       
       // Amount range filter
       const min = minAmount ? parseFloat(minAmount) : 0;
@@ -168,6 +181,16 @@ function App() {
 
   const handleCloseOutstandingPayment = () => {
     setIsOutstandingPaymentModalOpen(false);
+  };
+
+  const handleManageDocumentStatus = (transaction: Transaction) => {
+    setManagingTransaction(transaction);
+    setIsDocumentStatusModalOpen(true);
+  };
+
+  const handleCloseDocumentStatusModal = () => {
+    setIsDocumentStatusModalOpen(false);
+    setManagingTransaction(null);
   };
 
   const handleOpenAddModal = () => {
@@ -343,6 +366,7 @@ function App() {
           onConvertToEstimatedExpense={handleConvertToEstimatedExpense}
           onDelete={handleDeleteTransaction}
           onEdit={handleEditTransaction}
+          onManageDocumentStatus={handleManageDocumentStatus}
         />
 
         {/* Edit Transaction Modal */}
@@ -403,6 +427,14 @@ function App() {
           isOpen={isOutstandingPaymentModalOpen}
           onClose={handleCloseOutstandingPayment}
           transactions={transactions}
+        />
+
+        {/* Document Status Modal */}
+        <DocumentStatusModal
+          isOpen={isDocumentStatusModalOpen}
+          onClose={handleCloseDocumentStatusModal}
+          transaction={managingTransaction}
+          onSave={updateDocumentStatus}
         />
 
 

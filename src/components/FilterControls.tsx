@@ -37,6 +37,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
     { value: 'income' as FilterType, label: '收入', count: 0 },
     { value: 'estimated_income' as FilterType, label: '预估收入', count: 0 },
     { value: 'estimated_expense' as FilterType, label: '预估支出', count: 0 },
+    { value: 'incomplete_documents' as FilterType, label: '待完善文件', count: 0 },
   ];
 
   return (

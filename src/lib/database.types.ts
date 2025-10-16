@@ -9,6 +9,9 @@ export interface Database {
           amount: number;
           type: 'expense' | 'income' | 'estimated_income' | 'estimated_expense';
           is_converted: boolean;
+          contract_status: 'incomplete' | 'not_needed' | 'completed';
+          third_party_status: 'incomplete' | 'not_needed' | 'completed';
+          invoice_status: 'incomplete' | 'not_needed' | 'completed';
           created_at: string;
           updated_at: string;
         };
@@ -19,6 +22,9 @@ export interface Database {
           amount: number;
           type: 'expense' | 'income' | 'estimated_income' | 'estimated_expense';
           is_converted?: boolean;
+          contract_status?: 'incomplete' | 'not_needed' | 'completed';
+          third_party_status?: 'incomplete' | 'not_needed' | 'completed';
+          invoice_status?: 'incomplete' | 'not_needed' | 'completed';
           created_at?: string;
           updated_at?: string;
         };
@@ -29,6 +35,9 @@ export interface Database {
           amount?: number;
           type?: 'expense' | 'income' | 'estimated_income' | 'estimated_expense';
           is_converted?: boolean;
+          contract_status?: 'incomplete' | 'not_needed' | 'completed';
+          third_party_status?: 'incomplete' | 'not_needed' | 'completed';
+          invoice_status?: 'incomplete' | 'not_needed' | 'completed';
           created_at?: string;
           updated_at?: string;
         };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, Trash2, CreditCard as Edit, RotateCcw } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, Trash2, CreditCard as Edit, RotateCcw, FileText } from 'lucide-react';
 import { Transaction } from '../types/Transaction';
 
 interface TransactionListProps {
@@ -10,16 +10,18 @@ interface TransactionListProps {
   onConvertToEstimatedExpense: (id: string) => void;
   onDelete: (transaction: Transaction) => void;
   onEdit: (transaction: Transaction) => void;
+  onManageDocumentStatus?: (transaction: Transaction) => void;
 }
 
-export const TransactionList: React.FC<TransactionListProps> = ({ 
-  transactions, 
+export const TransactionList: React.FC<TransactionListProps> = ({
+  transactions,
   onConvertEstimated,
   onConvertToEstimated,
   onConvertEstimatedExpense,
   onConvertToEstimatedExpense,
   onDelete,
-  onEdit
+  onEdit,
+  onManageDocumentStatus
 }) => {
   const getTransactionIcon = (type: Transaction['type']) => {
     switch (type) {
@@ -118,6 +120,16 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                     >
                       <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>
+
+                    {transaction.type === 'estimated_income' && onManageDocumentStatus && (
+                      <button
+                        onClick={() => onManageDocumentStatus(transaction)}
+                        className="p-1.5 md:p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="管理文件状态"
+                      >
+                        <FileText className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </button>
+                    )}
                     
                     {transaction.type === 'income' && (
                       <button

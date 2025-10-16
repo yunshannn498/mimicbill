@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Transaction, TransactionType } from '../types/Transaction';
+import { Transaction, TransactionType, DocumentStatus } from '../types/Transaction';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 
@@ -28,6 +28,9 @@ export const useTransactions = () => {
         type: item.type,
         date: new Date(item.created_at),
         isConverted: item.is_converted,
+        contractStatus: item.contract_status || 'incomplete',
+        thirdPartyStatus: item.third_party_status || 'incomplete',
+        invoiceStatus: item.invoice_status || 'incomplete',
       }));
 
       setTransactions(formattedTransactions);
@@ -59,6 +62,9 @@ export const useTransactions = () => {
           amount,
           type,
           is_converted: false,
+          contract_status: 'incomplete',
+          third_party_status: 'incomplete',
+          invoice_status: 'incomplete',
         })
         .select()
         .single();
@@ -72,6 +78,9 @@ export const useTransactions = () => {
         type: data.type,
         date: new Date(data.created_at),
         isConverted: data.is_converted,
+        contractStatus: data.contract_status || 'incomplete',
+        thirdPartyStatus: data.third_party_status || 'incomplete',
+        invoiceStatus: data.invoice_status || 'incomplete',
       };
 
       setTransactions(prev => [newTransaction, ...prev]);
@@ -274,6 +283,9 @@ export const useTransactions = () => {
         type: item.type,
         date: new Date(item.created_at),
         isConverted: item.is_converted,
+        contractStatus: item.contract_status || 'incomplete',
+        thirdPartyStatus: item.third_party_status || 'incomplete',
+        invoiceStatus: item.invoice_status || 'incomplete',
       }));
 
       setTransactions(prev => [...formattedTransactions, ...prev]);
@@ -285,6 +297,43 @@ export const useTransactions = () => {
     } catch (error) {
       console.error('Error importing transactions:', error);
       throw error;
+    }
+  };
+
+  const updateDocumentStatus = async (
+    id: string,
+    contractStatus: DocumentStatus,
+    thirdPartyStatus: DocumentStatus,
+    invoiceStatus: DocumentStatus
+  ) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({
+          contract_status: contractStatus,
+          third_party_status: thirdPartyStatus,
+          invoice_status: invoiceStatus,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setTransactions(prev =>
+        prev.map(transaction =>
+          transaction.id === id
+            ? {
+                ...transaction,
+                contractStatus,
+                thirdPartyStatus,
+                invoiceStatus,
+              }
+            : transaction
+        )
+      );
+    } catch (error) {
+      console.error('Error updating document status:', error);
     }
   };
 
@@ -343,5 +392,6 @@ export const useTransactions = () => {
     deleteTransaction,
     updateTransaction,
     importTransactions,
+    updateDocumentStatus,
   };
 };
