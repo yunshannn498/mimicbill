@@ -13,6 +13,7 @@ export interface Transaction {
   type: 'expense' | 'income' | 'estimated_income' | 'estimated_expense';
   date: Date;
   isConverted?: boolean;
+  convertedAt?: Date;
   contractStatus?: DocumentStatus;
   thirdPartyStatus?: DocumentStatus;
   invoiceStatus?: DocumentStatus;

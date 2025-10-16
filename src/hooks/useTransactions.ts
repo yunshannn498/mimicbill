@@ -28,6 +28,7 @@ export const useTransactions = () => {
         type: item.type,
         date: new Date(item.created_at),
         isConverted: item.is_converted,
+        convertedAt: item.converted_at ? new Date(item.converted_at) : undefined,
         contractStatus: item.contract_status || 'incomplete',
         thirdPartyStatus: item.third_party_status || 'incomplete',
         invoiceStatus: item.invoice_status || 'incomplete',
@@ -78,6 +79,7 @@ export const useTransactions = () => {
         type: data.type,
         date: new Date(data.created_at),
         isConverted: data.is_converted,
+        convertedAt: data.converted_at ? new Date(data.converted_at) : undefined,
         contractStatus: data.contract_status || 'incomplete',
         thirdPartyStatus: data.third_party_status || 'incomplete',
         invoiceStatus: data.invoice_status || 'incomplete',
@@ -93,11 +95,13 @@ export const useTransactions = () => {
     if (!user) return;
 
     try {
+      const now = new Date().toISOString();
       const { error } = await supabase
         .from('transactions')
         .update({
           type: 'income',
           is_converted: true,
+          converted_at: now,
         })
         .eq('id', id);
 
@@ -106,7 +110,7 @@ export const useTransactions = () => {
       setTransactions(prev =>
         prev.map(transaction =>
           transaction.id === id && transaction.type === 'estimated_income'
-            ? { ...transaction, type: 'income' as TransactionType, isConverted: true }
+            ? { ...transaction, type: 'income' as TransactionType, isConverted: true, convertedAt: new Date(now) }
             : transaction
         )
       );
@@ -124,6 +128,7 @@ export const useTransactions = () => {
         .update({
           type: 'estimated_income',
           is_converted: false,
+          converted_at: null,
         })
         .eq('id', id);
 
@@ -132,7 +137,7 @@ export const useTransactions = () => {
       setTransactions(prev =>
         prev.map(transaction =>
           transaction.id === id && transaction.type === 'income'
-            ? { ...transaction, type: 'estimated_income' as TransactionType, isConverted: false }
+            ? { ...transaction, type: 'estimated_income' as TransactionType, isConverted: false, convertedAt: undefined }
             : transaction
         )
       );
@@ -283,6 +288,7 @@ export const useTransactions = () => {
         type: item.type,
         date: new Date(item.created_at),
         isConverted: item.is_converted,
+        convertedAt: item.converted_at ? new Date(item.converted_at) : undefined,
         contractStatus: item.contract_status || 'incomplete',
         thirdPartyStatus: item.third_party_status || 'incomplete',
         invoiceStatus: item.invoice_status || 'incomplete',
@@ -342,6 +348,17 @@ export const useTransactions = () => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
+    const totalIncome = transactions
+      .filter(t => {
+        if (t.type !== 'income') return false;
+        const dateToUse = t.convertedAt || t.date;
+        return (
+          dateToUse.getMonth() === currentMonth &&
+          dateToUse.getFullYear() === currentYear
+        );
+      })
+      .reduce((sum, t) => sum + t.amount, 0);
+
     const monthlyTransactions = transactions.filter(transaction => {
       const transactionDate = transaction.date;
       return (
@@ -349,10 +366,6 @@ export const useTransactions = () => {
         transactionDate.getFullYear() === currentYear
       );
     });
-
-    const totalIncome = monthlyTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
 
     const totalExpense = monthlyTransactions
       .filter(t => t.type === 'expense')
